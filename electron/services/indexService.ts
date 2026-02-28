@@ -1,5 +1,6 @@
-import hnswlib from 'hnswlib-node';
-const { HierarchicalNSW } = hnswlib;
+import { createRequire } from 'module';
+const _require = createRequire(import.meta.url);
+const { HierarchicalNSW } = _require('hnswlib-node');
 import path from 'path';
 import fs from 'fs';
 
@@ -9,7 +10,8 @@ export interface SearchResult {
     similarity: number;
 }
 
-let index: InstanceType<typeof HierarchicalNSW> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let index: any = null;
 const DIMENSION = 2048; // ResNet50 embedding size
 
 /**
@@ -54,7 +56,7 @@ export async function search(queryVector: Float32Array, k: number = 10): Promise
         const queryArray = Array.from(queryVector);
         const result = index.searchKnn(queryArray, k);
 
-        const searchResults: SearchResult[] = result.neighbors.map((id, i) => {
+        const searchResults: SearchResult[] = result.neighbors.map((id: number, i: number) => {
             const distance = result.distances[i];
             // For cosine space in hnswlib-node: similarity = 1 - distance
             const similarity = Math.max(0, 1 - distance);

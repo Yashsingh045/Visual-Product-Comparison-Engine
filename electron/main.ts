@@ -1,3 +1,9 @@
+// Polyfill: util.isNullOrUndefined was removed in newer Node.js but tfjs-node needs it
+import util from 'util';
+if (!(util as any).isNullOrUndefined) {
+  (util as any).isNullOrUndefined = (val: any) => val === null || val === undefined;
+}
+
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -17,7 +23,7 @@ async function initializeServices() {
     db.initDb()
 
     // 2. Load ML Model
-    const modelPath = path.join(app.getAppPath(), 'ml/model/resnet50/model.json')
+    const modelPath = path.join(app.getAppPath(), 'ml/models/resnet50/model.json')
     await embeddingService.loadModel(modelPath)
 
     // 3. Load HNSW Index
@@ -40,6 +46,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
     },
   })
 

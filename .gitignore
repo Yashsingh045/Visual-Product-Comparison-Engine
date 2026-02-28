@@ -24,4 +24,7 @@ dist-electron
 *.sln
 *.sw?
 
-data/*
+data/images
+data/thumbnails
+data/embeddings.hnsw
+data/products.db
