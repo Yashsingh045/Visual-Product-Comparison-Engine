@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import electron from 'vite-plugin-electron'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,20 +16,24 @@ export default defineConfig({
           build: {
             rollupOptions: {
               external: [
+                '@tensorflow/tfjs-node',
                 'better-sqlite3',
                 'hnswlib-node',
                 'sharp',
-                '@tensorflow/tfjs-node',
                 'mock-aws-s3',
                 'aws-sdk',
                 'nock',
-                /^node:/
-              ]
-            }
-          }
-        }
+              ],
+            },
+          },
+        },
       }
     ])
   ],
   base: "./",
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
