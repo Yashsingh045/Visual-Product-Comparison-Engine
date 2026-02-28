@@ -1,5 +1,37 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+import { fileURLToPath } from 'url'
+import * as db from './database/db'
+import * as embeddingService from './services/embeddingService'
+import * as indexService from './services/indexService'
+import { registerSearchHandlers } from './ipc/searchHandler'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+async function initializeServices() {
+  try {
+    console.log('Initializing backend services...')
+
+    // 1. Initialize SQLite Database
+    db.initDb()
+
+    // 2. Load ML Model
+    const modelPath = path.join(app.getAppPath(), 'ml/model/model.json')
+    await embeddingService.loadModel(modelPath)
+
+    // 3. Load HNSW Index
+    const indexPath = path.join(app.getAppPath(), 'ml/index/vector.index')
+    await indexService.loadIndex(indexPath)
+
+    // 4. Register IPC Handlers
+    registerSearchHandlers()
+
+    console.log('All services initialized successfully.')
+  } catch (error) {
+    console.error('Initialization failed:', error)
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -11,7 +43,6 @@ function createWindow() {
     },
   })
 
-  // In dev load Vite server, in prod load built files
   if (process.env.NODE_ENV === 'development') {
     win.loadURL('http://localhost:5173')
     win.webContents.openDevTools()
@@ -20,8 +51,12 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(async () => {
+  await initializeServices()
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
+  db.closeDb()
   if (process.platform !== 'darwin') app.quit()
 })
