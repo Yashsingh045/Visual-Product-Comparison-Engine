@@ -1,87 +1,90 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Header } from './components/Header';
-import { UploadZone } from './components/UploadZone';
-import { ResultsGrid } from './components/ResultsGrid';
-import { LoadingSpinner } from './components/LoadingSpinner';
-import { ComparisonView } from './components/ComparisonView';
-import { searchByImage, type SearchResultItem } from './lib/ipc';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback, useEffect } from "react";
+import { Header } from "./components/Header";
+import { UploadZone } from "./components/UploadZone";
+import { ResultsGrid } from "./components/ResultsGrid";
+import { LoadingSpinner } from "./components/LoadingSpinner";
+import { ComparisonView } from "./components/ComparisonView";
+import { searchByImage, type SearchResultItem } from "./lib/ipc";
+import { motion, AnimatePresence } from "framer-motion";
 
-type AppState = 'idle' | 'loading' | 'results' | 'compare';
+type AppState = "idle" | "loading" | "results" | "compare";
 
 const SIMILARITY_THRESHOLD = 0.7; // 70% Confidence
 
-
-
 function App() {
-  const [appState, setAppState] = useState<AppState>('idle');
+  const [appState, setAppState] = useState<AppState>("idle");
   const [queryImage, setQueryImage] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<SearchResultItem | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<SearchResultItem | null>(null);
 
   useEffect(() => {
-    console.log('App state changed to:', appState);
+    console.log("App state changed to:", appState);
   }, [appState]);
 
   // Prevent default drag/drop behavior across the entire window
   useEffect(() => {
     const preventDefault = (e: DragEvent) => e.preventDefault();
-    window.addEventListener('dragover', preventDefault);
-    window.addEventListener('drop', preventDefault);
+    window.addEventListener("dragover", preventDefault);
+    window.addEventListener("drop", preventDefault);
     return () => {
-      window.removeEventListener('dragover', preventDefault);
-      window.removeEventListener('drop', preventDefault);
+      window.removeEventListener("dragover", preventDefault);
+      window.removeEventListener("drop", preventDefault);
     };
   }, []);
 
   const handleUpload = useCallback(async (filePath: string) => {
-    console.log('Starting upload flow for:', filePath);
+    console.log("Starting upload flow for:", filePath);
     setQueryImage(filePath);
-    setAppState('loading');
+    setAppState("loading");
 
     try {
       const response = await searchByImage(filePath);
-      console.log('Search response received:', response);
+      console.log("Search response received:", response);
 
       if (response.success && response.results) {
         // Filter results based on the 70% threshold
-        const confidentResults = response.results.filter(r => r.similarity >= SIMILARITY_THRESHOLD);
-        console.log(`Found ${confidentResults.length} confident matches (>= 70%) out of ${response.results.length} total.`);
+        const confidentResults = response.results.filter(
+          (r) => r.similarity >= SIMILARITY_THRESHOLD,
+        );
+        console.log(
+          `Found ${confidentResults.length} confident matches (>= 70%) out of ${response.results.length} total.`,
+        );
 
         setSearchResults(confidentResults);
-        setAppState('results');
+        setAppState("results");
       } else {
-        console.error('Search failed:', response.message);
-        setAppState('idle');
-        alert(`Search Error: ${response.message || 'Unknown error'}`);
+        console.error("Search failed:", response.message);
+        setAppState("idle");
+        alert(`Search Error: ${response.message || "Unknown error"}`);
       }
     } catch (err) {
-      console.error('Crash during handleUpload:', err);
-      setAppState('idle');
+      console.error("Crash during handleUpload:", err);
+      setAppState("idle");
     }
   }, []);
 
   const handleReset = useCallback(() => {
-    console.log('Resetting app state');
-    setAppState('idle');
+    console.log("Resetting app state");
+    setAppState("idle");
     setQueryImage(null);
     setSearchResults([]);
     setSelectedProduct(null);
   }, []);
 
   const handleCompare = useCallback((product: SearchResultItem) => {
-    console.log('Entering comparison mode for:', product.id);
+    console.log("Entering comparison mode for:", product.id);
     setSelectedProduct(product);
-    setAppState('compare');
+    setAppState("compare");
   }, []);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden selection:bg-primary/30">
-      <Header onReset={handleReset} showReset={appState !== 'idle'} />
+      <Header onReset={handleReset} showReset={appState !== "idle"} />
 
       <main className="relative z-10 w-full min-h-screen">
         <AnimatePresence mode="wait">
-          {appState === 'idle' && (
+          {appState === "idle" && (
             <motion.div
               key="idle"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -93,7 +96,7 @@ function App() {
             </motion.div>
           )}
 
-          {appState === 'loading' && (
+          {appState === "loading" && (
             <motion.div
               key="loading"
               initial={{ opacity: 0 }}
@@ -104,7 +107,7 @@ function App() {
             </motion.div>
           )}
 
-          {appState === 'results' && queryImage && (
+          {appState === "results" && queryImage && (
             <motion.div
               key="results"
               initial={{ opacity: 0, y: 30 }}
@@ -120,7 +123,7 @@ function App() {
             </motion.div>
           )}
 
-          {appState === 'compare' && queryImage && selectedProduct && (
+          {appState === "compare" && queryImage && selectedProduct && (
             <motion.div
               key="compare"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -131,7 +134,7 @@ function App() {
               <ComparisonView
                 queryImage={queryImage}
                 selectedProduct={selectedProduct}
-                onBack={() => setAppState('results')}
+                onBack={() => setAppState("results")}
               />
             </motion.div>
           )}
@@ -146,7 +149,5 @@ function App() {
     </div>
   );
 }
-
-
 
 export default App;

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { app } from "electron";
+import { getResourcePath } from "../resourcePath";
 
 export interface Product {
   product_id: number;
@@ -13,12 +14,8 @@ let db: Database.Database;
  * Initializes the SQLite database.
  * Opens the existing products.db from the data/ directory.
  */
-/**
- * Initializes the SQLite database.
- * Opens the existing products.db from the data/ directory.
- */
 export function initDb(): Database.Database {
-  const dbPath = path.join(app.getAppPath(), "data", "products.db");
+  const dbPath = getResourcePath("data", "products.db");
 
   db = new Database(dbPath, { readonly: true });
 
@@ -26,7 +23,6 @@ export function initDb(): Database.Database {
 }
 
 /**
- * Fetches a product by its product_id.
  * Fetches a product by its product_id.
  */
 export function getProductById(id: number): Product | null {

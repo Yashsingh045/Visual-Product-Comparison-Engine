@@ -1,41 +1,51 @@
 // Polyfill: util.isNullOrUndefined was removed in newer Node.js but tfjs-node needs it
-import util from 'util';
+import util from "util";
 if (!(util as any).isNullOrUndefined) {
-  (util as any).isNullOrUndefined = (val: any) => val === null || val === undefined;
+  (util as any).isNullOrUndefined = (val: any) =>
+    val === null || val === undefined;
 }
 
-import { app, BrowserWindow } from 'electron'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import * as db from './database/db'
-import * as embeddingService from './services/embeddingService'
-import * as indexService from './services/indexService'
-import { registerSearchHandlers } from './ipc/searchHandler'
+import { app, BrowserWindow, ipcMain } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
+import * as db from "./database/db";
+import * as embeddingService from "./services/embeddingService";
+import * as indexService from "./services/indexService";
+import { registerSearchHandlers } from "./ipc/searchHandler";
+import {
+  getResourcePath,
+  ensureThumbnailsExtracted,
+  getThumbnailsDir,
+} from "./resourcePath";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function initializeServices() {
   try {
-    console.log('Initializing backend services...')
+    console.log("Initializing backend services...");
+
+    // 0. Extract thumbnails on first launch (from tar.gz)
+    ensureThumbnailsExtracted();
 
     // 1. Initialize SQLite Database
-    db.initDb()
+    db.initDb();
 
     // 2. Load ML Model
-    const modelPath = path.join(app.getAppPath(), 'ml/models/resnet50/model.json')
-    await embeddingService.loadModel(modelPath)
+    const modelPath = getResourcePath("ml", "models", "resnet50", "model.json");
+    await embeddingService.loadModel(modelPath);
 
     // 3. Load HNSW Index
-    const indexPath = path.join(app.getAppPath(), 'data/embeddings.hnsw')
-    await indexService.loadIndex(indexPath)
+    const indexPath = getResourcePath("data", "embeddings.hnsw");
+    await indexService.loadIndex(indexPath);
 
     // 4. Register IPC Handlers
-    registerSearchHandlers()
+    registerSearchHandlers();
+    ipcMain.handle("get-thumbnails-dir", () => getThumbnailsDir());
 
-    console.log('All services initialized successfully.')
+    console.log("All services initialized successfully.");
   } catch (error) {
-    console.error('Initialization failed:', error)
+    console.error("Initialization failed:", error);
   }
 }
 
@@ -48,22 +58,22 @@ function createWindow() {
       contextIsolation: false,
       webSecurity: false,
     },
-  })
+  });
 
-  if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:5173')
-    win.webContents.openDevTools()
+  if (process.env.NODE_ENV === "development") {
+    win.loadURL("http://localhost:5173");
+    win.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'))
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 
 app.whenReady().then(async () => {
-  await initializeServices()
-  createWindow()
-})
+  await initializeServices();
+  createWindow();
+});
 
-app.on('window-all-closed', () => {
-  db.closeDb()
-  if (process.platform !== 'darwin') app.quit()
-})
+app.on("window-all-closed", () => {
+  db.closeDb();
+  if (process.platform !== "darwin") app.quit();
+});
