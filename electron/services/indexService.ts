@@ -1,4 +1,5 @@
-import { HierarchicalNSW } from 'hnswlib-node';
+import hnswlib from 'hnswlib-node';
+const { HierarchicalNSW } = hnswlib;
 import path from 'path';
 import fs from 'fs';
 
@@ -8,7 +9,7 @@ export interface SearchResult {
     similarity: number;
 }
 
-let index: HierarchicalNSW | null = null;
+let index: InstanceType<typeof HierarchicalNSW> | null = null;
 const DIMENSION = 2048; // ResNet50 embedding size
 
 /**
@@ -32,7 +33,7 @@ export async function loadIndex(indexPath: string): Promise<void> {
         console.log(`HNSW Index loaded: ${indexPath}`);
     } catch (error) {
         console.error('Failed to load HNSW index:', error);
-        throw new Error(`Index Service Error: Failed to load index at ${indexPath}`);
+        throw new Error(`Index Service Error: Failed to load index at ${indexPath}`,);
     }
 }
 

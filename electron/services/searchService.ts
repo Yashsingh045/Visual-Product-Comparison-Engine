@@ -32,9 +32,8 @@ export async function search(imagePath: string, topK: number = 10): Promise<Fina
             const product = db.getProductByVectorId(res.id);
             if (product) {
                 finalResults.push({
-                    id: product.id,
+                    id: product.product_id,
                     imagePath: product.image_path,
-                    title: product.title,
                     similarity: parseFloat(res.similarity.toFixed(4))
                 });
             } else {

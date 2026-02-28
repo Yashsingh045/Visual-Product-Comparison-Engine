@@ -4,52 +4,22 @@ import { app } from 'electron';
 import fs from 'fs';
 
 export interface Product {
-    id: number;
+    product_id: number;
     image_path: string;
-    title?: string;
 }
 
 let db: Database.Database;
 
-/**
- * Initializes the SQLite database.
- * Creates the products table if it doesn't exist.
- */
-export function initDb(): Database.Database {
-    const userDataPath = app.getPath('userData');
-    const dbPath = path.join(userDataPath, 'products.db');
+// Initializes the SQLite database.
 
-    // Ensure directory exists (though userData usually does)
-    const dbDir = path.dirname(dbPath);
-    if (!fs.existsSync(dbDir)) {
-        fs.mkdirSync(dbDir, { recursive: true });
+export function initDb(): Database.Database {
+    const dbPath = path.join(app.getAppPath(), "data", "products.db");
+
+    if (!fs.existsSync(dbPath)) {
+        console.warn(`Database not found at ${dbPath}`);
     }
 
-    db = new Database(dbPath);
-
-    // Performance optimizations
-    db.pragma('journal_mode = WAL');
-    db.pragma('synchronous = NORMAL');
-
-    // Create schema based on README.md and prompt requirements
-    // Note: README mentions product_id and image_path. Prompt mentions id, image_path, title.
-    // We'll use id as the primary key and image_path.
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY,
-            image_path TEXT NOT NULL,
-            title TEXT
-        )
-    `);
-
-    // Add mapping table as per ER diagram in README
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS embeddings (
-            vector_id INTEGER PRIMARY KEY,
-            product_id INTEGER UNIQUE,
-            FOREIGN KEY(product_id) REFERENCES products(id)
-        )
-    `);
+    db = new Database(dbPath, { readonly: true });
 
     return db;
 }
@@ -62,7 +32,7 @@ export function initDb(): Database.Database {
 export function getProductById(id: number): Product | null {
     if (!db) initDb();
 
-    const stmt = db.prepare('SELECT id, image_path, title FROM products WHERE id = ?');
+    const stmt = db.prepare('SELECT product_id, image_path FROM products WHERE product_id = ?');
     const row = stmt.get(id) as Product | undefined;
 
     return row || null;
@@ -78,9 +48,9 @@ export function getProductByVectorId(vectorId: number): Product | null {
 
     // Join products with embeddings to resolve vector_id -> product_id -> metadata
     const stmt = db.prepare(`
-        SELECT p.id, p.image_path, p.title 
+        SELECT p.product_id, p.image_path 
         FROM products p
-        JOIN embeddings e ON p.id = e.product_id
+        JOIN embeddings e ON p.product_id = e.product_id
         WHERE e.vector_id = ?
     `);
 
@@ -88,9 +58,6 @@ export function getProductByVectorId(vectorId: number): Product | null {
     return row || null;
 }
 
-/**
- * Close database connection
- */
 export function closeDb() {
     if (db) {
         db.close();

@@ -17,11 +17,11 @@ async function initializeServices() {
     db.initDb()
 
     // 2. Load ML Model
-    const modelPath = path.join(app.getAppPath(), 'ml/model/model.json')
+    const modelPath = path.join(app.getAppPath(), 'ml/model/resnet50/model.json')
     await embeddingService.loadModel(modelPath)
 
     // 3. Load HNSW Index
-    const indexPath = path.join(app.getAppPath(), 'ml/index/vector.index')
+    const indexPath = path.join(app.getAppPath(), 'data/embeddings.hnsw')
     await indexService.loadIndex(indexPath)
 
     // 4. Register IPC Handlers

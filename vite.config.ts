@@ -6,11 +6,27 @@ import electron from 'vite-plugin-electron'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     tailwindcss(),
     electron([
       {
-        entry: 'electron/main.ts'
+        entry: 'electron/main.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              external: [
+                'better-sqlite3',
+                'hnswlib-node',
+                'sharp',
+                '@tensorflow/tfjs-node',
+                'mock-aws-s3',
+                'aws-sdk',
+                'nock',
+                /^node:/
+              ]
+            }
+          }
+        }
       }
     ])
   ],
