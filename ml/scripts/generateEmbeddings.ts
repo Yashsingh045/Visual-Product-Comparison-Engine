@@ -25,8 +25,6 @@ const INDEX_PATH = path.join(__dirname, "../../data/embeddings.hnsw");
 const BATCH_SIZE = 32;
 const IMAGE_SIZE = 224;
 const DIM = 2048;
-const IMAGENET_MEAN = [0.485, 0.456, 0.406];
-const IMAGENET_STD = [0.229, 0.224, 0.225];
 
 function initDatabase(): Database.Database {
   const dataDir = path.dirname(DB_PATH);
@@ -68,10 +66,7 @@ async function preprocessImage(imagePath: string): Promise<tf.Tensor3D> {
   ]);
 
   const normalized = tf.tidy(() => {
-    const scaled = tensor.div(255.0);
-    const mean = tf.tensor1d(IMAGENET_MEAN);
-    const std = tf.tensor1d(IMAGENET_STD);
-    return scaled.sub(mean).div(std) as tf.Tensor3D;
+    return tensor.div(255.0) as tf.Tensor3D;
   });
 
   tensor.dispose();
