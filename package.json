@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "download-model": "tsx scripts/download-model.ts",
+    "download-model": "tsx ml/scripts/download_model.ts",
+    "generate-embeddings": "tsx ml/scripts/generateEmbeddings.ts",
+    "generate-thumbnails": "tsx ml/scripts/buildIndex.ts",
     "lint": "eslint ."
   },
   "dependencies": {
