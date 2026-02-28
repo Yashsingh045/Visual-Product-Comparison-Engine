@@ -192,7 +192,7 @@ erDiagram
 | Layer | Technology | Purpose |
 |---|---|---|
 | **Desktop Runtime** | Electron + Vite | Cross-platform desktop app, fully offline |
-| **Frontend UI** | React + TailwindCSS + shadcn/ui | Drag-and-drop UI, results display |
+| **Frontend UI** | React + TailwindCSS + shad cn/ui | Drag-and-drop UI, results display |
 | **ML Model** | TensorFlow.js + ResNet-50 (local weights) | 2048-dim visual embeddings |
 | **Image Preprocessing** | Sharp.js | Resize to 224×224, normalize input |
 | **Vector Search** | HNSWLib (Node binding) | Fast ANN search over 20K embeddings |

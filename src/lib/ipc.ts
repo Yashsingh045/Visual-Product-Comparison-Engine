@@ -1,5 +1,26 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const { ipcRenderer } = (window as any).require('electron');
+let ipcRenderer: any;
+
+try {
+    // Dynamic require for Electron to avoid crashes in non-electron environments or during early Vite phases
+    const electron = (window as any).require?.('electron');
+    ipcRenderer = electron?.ipcRenderer;
+    (window as any).webUtils = electron?.webUtils;
+} catch (e) {
+    console.warn('Electron IPC not available:', e);
+}
+
+// Fallback for types and safe calling
+const safeIpc = {
+    invoke: async (channel: string, ...args: any[]) => {
+        if (!ipcRenderer) {
+            console.error(`IPC Error: channel "${channel}" called but ipcRenderer is not available.`);
+            return { success: false, message: 'IPC not available' };
+        }
+        return await ipcRenderer.invoke(channel, ...args);
+    }
+};
+
 
 export interface SearchResultItem {
     id: number;
@@ -21,7 +42,7 @@ export interface SearchResponse {
  */
 export async function searchByImage(filePath: string): Promise<SearchResponse> {
     try {
-        const response = await ipcRenderer.invoke('search-image', filePath);
+        const response = await safeIpc.invoke('search-image', filePath);
         return response as SearchResponse;
     } catch (error: any) {
         return {
@@ -37,8 +58,8 @@ export async function searchByImage(filePath: string): Promise<SearchResponse> {
  */
 export async function openFileDialog(): Promise<string | null> {
     try {
-        const response = await ipcRenderer.invoke('open-file-dialog');
-        if (response.success && response.filePath) {
+        const response = await safeIpc.invoke('open-file-dialog');
+        if (response && response.success && response.filePath) {
             return response.filePath;
         }
         return null;
