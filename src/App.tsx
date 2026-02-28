@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 type AppState = 'idle' | 'loading' | 'results' | 'compare';
 
+const SIMILARITY_THRESHOLD = 0.7; // 70% Confidence
+
 
 
 function App() {
@@ -42,7 +44,11 @@ function App() {
       console.log('Search response received:', response);
 
       if (response.success && response.results) {
-        setSearchResults(response.results);
+        // Filter results based on the 70% threshold
+        const confidentResults = response.results.filter(r => r.similarity >= SIMILARITY_THRESHOLD);
+        console.log(`Found ${confidentResults.length} confident matches (>= 70%) out of ${response.results.length} total.`);
+
+        setSearchResults(confidentResults);
         setAppState('results');
       } else {
         console.error('Search failed:', response.message);

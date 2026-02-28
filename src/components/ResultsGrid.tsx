@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { type SearchResultItem, toFileUrl } from '@/lib/ipc';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Layers, LayoutGrid } from 'lucide-react';
+import { ArrowRight, Layers, LayoutGrid, SearchX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ResultsGridProps {
@@ -97,24 +97,47 @@ export function ResultsGrid({ queryImage, results, onCompare }: ResultsGridProps
                         </div>
                     </div>
 
-                    <motion.div
-                        layout
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                    >
-                        <AnimatePresence mode="popLayout">
-                            {results.map((product, idx) => (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    index={idx}
-                                    imagePath={product.imagePath}
-                                    similarity={product.similarity}
-                                    isSelected={selectedId === product.id}
-                                    onSelect={() => setSelectedId(product.id)}
-                                />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
+                    {results.length > 0 ? (
+                        <motion.div
+                            layout
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                        >
+                            <AnimatePresence mode="popLayout">
+                                {results.map((product, idx) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        id={product.id}
+                                        index={idx}
+                                        imagePath={product.imagePath}
+                                        similarity={product.similarity}
+                                        isSelected={selectedId === product.id}
+                                        onSelect={() => setSelectedId(product.id)}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center justify-center min-h-[40vh] glass rounded-3xl border-white/5 p-12 text-center"
+                        >
+                            <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                                <SearchX className="w-10 h-10 text-muted-foreground/50" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-foreground mb-2">No High-Confidence Matches</h3>
+                            <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-8 leading-relaxed">
+                                Our neural engine couldn't find any products with a similarity score above <span className="text-primary font-bold">70%</span>.
+                            </p>
+                            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-center gap-3 text-left max-w-md">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+                                <p className="text-[11px] text-muted-foreground leading-snug">
+                                    <span className="text-primary font-bold uppercase tracking-widest mr-1">Pro Tip:</span>
+                                    Try uploading a clearer image with better lighting and a neutral background for better feature extraction.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
                 </main>
             </div>
         </div>
