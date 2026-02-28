@@ -1,6 +1,10 @@
 import * as embeddingService from './embeddingService';
 import * as indexService from './indexService';
 import * as db from '../database/db';
+import path from 'path';
+import fs from 'fs';
+import { app } from 'electron';
+
 
 export interface FinalSearchResult {
     id: number;
@@ -27,12 +31,34 @@ export async function search(imagePath: string, topK: number = 10): Promise<Fina
         // 3. Fetch product metadata from database and merge
         const finalResults: FinalSearchResult[] = [];
 
+        const appPath = app.getAppPath();
+
         for (const res of annResults) {
             const product = db.getProductByVectorId(res.id);
             if (product) {
+                // Normalize path: if it's an absolute path from a different machine, 
+                // re-anchor it to the current project's data directory.
+                // Priority: thumbnails (since they exist), then original images.
+                let normalizedPath = product.image_path;
+                const fileName = path.basename(normalizedPath);
+
+                // Try thumbnails first as they were found in the project
+                const thumbnailPath = path.join(appPath, 'data', 'thumbnails', fileName);
+                const originalPath = path.join(appPath, 'data', 'images', fileName);
+
+                if (fs.existsSync(thumbnailPath)) {
+                    normalizedPath = thumbnailPath;
+                } else if (fs.existsSync(originalPath)) {
+                    normalizedPath = originalPath;
+                } else {
+                    // Fallback to the re-anchored original path even if not found, 
+                    // maybe it's a permission issue or a symlink.
+                    normalizedPath = originalPath;
+                }
+
                 finalResults.push({
                     id: product.product_id,
-                    imagePath: product.image_path,
+                    imagePath: normalizedPath,
                     similarity: parseFloat(res.similarity.toFixed(4))
                 });
             } else {
