@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, dialog } from 'electron';
 import * as searchService from '../services/searchService';
 import fs from 'fs';
 import path from 'path';
@@ -53,5 +53,23 @@ export function registerSearchHandlers() {
         }
     });
 
-    console.log('IPC Handler search-image registered.');
+    /**
+     * Handle 'open-file-dialog' request — opens native file picker.
+     */
+    ipcMain.handle('open-file-dialog', async () => {
+        const result = await dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [
+                { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'webp'] }
+            ]
+        });
+
+        if (result.canceled || result.filePaths.length === 0) {
+            return { success: false, message: 'No file selected.' };
+        }
+
+        return { success: true, filePath: result.filePaths[0] };
+    });
+
+    console.log('IPC Handlers registered: search-image, open-file-dialog');
 }

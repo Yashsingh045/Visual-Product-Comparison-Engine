@@ -5,7 +5,6 @@ import * as db from '../database/db';
 export interface FinalSearchResult {
     id: number;
     imagePath: string;
-    title?: string;
     similarity: number;
 }
 

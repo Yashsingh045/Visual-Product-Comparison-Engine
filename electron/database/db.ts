@@ -1,7 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
-import fs from 'fs';
 
 export interface Product {
     product_id: number;
@@ -10,24 +9,23 @@ export interface Product {
 
 let db: Database.Database;
 
-// Initializes the SQLite database.
-
+/**
+ * Initializes the SQLite database.
+ * Opens the existing products.db from the data/ directory.
+ */
 export function initDb(): Database.Database {
-    const dbPath = path.join(app.getAppPath(), "data", "products.db");
-
-    if (!fs.existsSync(dbPath)) {
-        console.warn(`Database not found at ${dbPath}`);
-    }
+    const dbPath = path.join(app.getAppPath(), 'data', 'products.db');
 
     db = new Database(dbPath, { readonly: true });
+
+    // Performance optimizations
+    db.pragma('journal_mode = WAL');
 
     return db;
 }
 
 /**
- * Fetches a product by its ID.
- * @param id The product ID.
- * @returns The product or null if not found.
+ * Fetches a product by its product_id.
  */
 export function getProductById(id: number): Product | null {
     if (!db) initDb();
@@ -46,7 +44,6 @@ export function getProductById(id: number): Product | null {
 export function getProductByVectorId(vectorId: number): Product | null {
     if (!db) initDb();
 
-    // Join products with embeddings to resolve vector_id -> product_id -> metadata
     const stmt = db.prepare(`
         SELECT p.product_id, p.image_path 
         FROM products p
