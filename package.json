@@ -1,5 +1,6 @@
 {
   "name": "visual-product-comparison-engine",
+  "description": "Visual Product Comparison Engine - Offline Visual Search Intelligence",
   "private": true,
   "version": "0.0.1",
   "main": "dist-electron/main.js",
@@ -32,16 +33,16 @@
         "to": "ml/models/resnet50"
       },
       {
-        "from": "data/embeddings.hnsw",
-        "to": "data/embeddings.hnsw"
+        "from": "datazip/embeddings.hnsw.zip",
+        "to": "data/embeddings.hnsw.zip"
       },
       {
-        "from": "data/products.db",
-        "to": "data/products.db"
+        "from": "datazip/products.db.zip",
+        "to": "data/products.db.zip"
       },
       {
-        "from": "data/thumbnails.tar.gz",
-        "to": "data/thumbnails.tar.gz"
+        "from": "datazip/thumbnails.zip",
+        "to": "data/thumbnails.zip"
       }
     ],
     "mac": {
@@ -54,6 +55,7 @@
   },
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.22.0",
+    "adm-zip": "^0.5.16",
     "better-sqlite3": "^12.6.2",
     "framer-motion": "^12.34.3",
     "hnswlib-node": "^3.0.0",
@@ -62,6 +64,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.2.1",
+    "@types/adm-zip": "^0.5.7",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",

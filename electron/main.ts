@@ -14,7 +14,8 @@ import * as indexService from "./services/indexService";
 import { registerSearchHandlers } from "./ipc/searchHandler";
 import {
   getResourcePath,
-  ensureThumbnailsExtracted,
+  ensureAssetsExtracted,
+  getDataDir,
   getThumbnailsDir,
 } from "./resourcePath";
 
@@ -25,8 +26,8 @@ async function initializeServices() {
   try {
     console.log("Initializing backend services...");
 
-    // 0. Extract thumbnails on first launch (from tar.gz)
-    ensureThumbnailsExtracted();
+    // 0. Extract thumbnails and other assets on first launch (from zips)
+    ensureAssetsExtracted();
 
     // 1. Initialize SQLite Database
     db.initDb();
@@ -36,7 +37,7 @@ async function initializeServices() {
     await embeddingService.loadModel(modelPath);
 
     // 3. Load HNSW Index
-    const indexPath = getResourcePath("data", "embeddings.hnsw");
+    const indexPath = path.join(getDataDir(), "embeddings.hnsw");
     await indexService.loadIndex(indexPath);
 
     // 4. Register IPC Handlers

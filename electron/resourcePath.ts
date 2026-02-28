@@ -1,7 +1,7 @@
 import { app } from "electron";
 import path from "path";
 import fs from "fs";
-import { execSync } from "child_process";
+import AdmZip from "adm-zip";
 
 const isProd = app.isPackaged;
 
@@ -10,31 +10,50 @@ export function getResourcePath(...segments: string[]): string {
   return path.join(basePath, ...segments);
 }
 
-export function getThumbnailsDir(): string {
+export function getDataDir(): string {
   if (isProd) {
-    return path.join(app.getPath("userData"), "thumbnails");
+    return path.join(app.getPath("userData"), "data");
   }
-  return path.join(app.getAppPath(), "data", "thumbnails");
+  return path.join(app.getAppPath(), "data");
 }
 
-export function ensureThumbnailsExtracted(): void {
-  const thumbnailsDir = getThumbnailsDir();
+export function getThumbnailsDir(): string {
+  return path.join(getDataDir(), "thumbnails");
+}
 
-  if (fs.existsSync(thumbnailsDir)) {
-    console.log("Thumbnails directory found:", thumbnailsDir);
-    return;
+export function ensureAssetsExtracted(): void {
+  const dataDir = getDataDir();
+
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
 
-  const tarPath = getResourcePath("data", "thumbnails.tar.gz");
+  const assetsToExtract = [
+    { zipName: "thumbnails.zip", checkPath: "thumbnails" },
+    { zipName: "embeddings.hnsw.zip", checkPath: "embeddings.hnsw" },
+    { zipName: "products.db.zip", checkPath: "products.db" },
+  ];
 
-  if (!fs.existsSync(tarPath)) {
-    console.warn("Thumbnails archive not found:", tarPath);
-    return;
+  for (const asset of assetsToExtract) {
+    const targetPath = path.join(dataDir, asset.checkPath);
+
+    // Check if asset already exists
+    if (fs.existsSync(targetPath)) {
+      continue;
+    }
+
+    const zipPath = getResourcePath("data", asset.zipName);
+
+    if (fs.existsSync(zipPath)) {
+      try {
+        console.log(`Extracting ${asset.zipName} to ${dataDir}...`);
+        const zip = new AdmZip(zipPath);
+        zip.extractAllTo(dataDir, true);
+      } catch (error) {
+        console.error(`Failed to extract ${asset.zipName}:`, error);
+      }
+    } else {
+      console.warn(`Asset zip not found: ${zipPath}`);
+    }
   }
-
-  console.log("Extracting thumbnails on first launch...");
-  const targetDir = path.dirname(thumbnailsDir);
-  fs.mkdirSync(targetDir, { recursive: true });
-  execSync(`tar -xzf "${tarPath}" -C "${targetDir}"`);
-  console.log("Thumbnails extracted to:", thumbnailsDir);
 }
