@@ -384,8 +384,8 @@ flowchart TD
 
 | Resource | Link |
 |----------|------|
-| **Live Demo** | *Desktop application — run locally* |
-| **Demo Video** | *[To be added]* |
+| **PPT LINK** | [View PPT Here](https://drive.google.com/drive/folders/1D2Ryyw6002_d1hoYzOMboLPbLsb2h854?usp=sharing) |
+| **Demo Video** | [Demo Video Here](https://drive.google.com/file/d/11iu54CsdgsbmHaOYYAvDqbXQYpJfvCO7/view?usp=sharing) |
 | **GitHub Repository** | [Visual-Product-Comparison-Engine](https://github.com/Yashsingh045/Visual-Product-Comparison-Engine) |
 
 ---
@@ -412,8 +412,8 @@ flowchart TD
 | Member Name | Role |
 |-------------|------|    
 | **Yashveer Singh** | Backend Engineer
-| **Vipul** | ML Engineer
-| **Abhay Pratap Yadav** | Frontend and UX Engineer
+| **Vipul** | Frontend and UX Engineer
+| **Abhay Pratap Yadav** | ML Engineer
 
 ---
 
